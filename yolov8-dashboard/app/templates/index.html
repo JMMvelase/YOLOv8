@@ -10,5 +10,20 @@
 <body>
     <h1>🔴 YOLOv8 Live Feed</h1>
     <img src="/video" width="720" />
+
+    <div id="counts"></div>
+
+    
+<script>
+setInterval(() => {
+    fetch('/counts')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("counts").innerHTML = 
+                Object.entries(data).map(([k, v]) => `<p>${k}: ${v}</p>`).join('');
+        });
+}, 2000);
+</script>
+
 </body>
 </html>
