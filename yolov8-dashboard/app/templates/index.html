@@ -4,26 +4,26 @@
     <title>YOLOv8 Live Dashboard</title>
     <style>
         body { text-align: center; font-family: Arial; }
-        img { border: 2px solid #444; margin-top: 20px; }
+        #videoFeed { border: 2px solid #444; margin-top: 20px; width: 720px; }
+        #counts { margin-top: 20px; font-size: 18px; }
     </style>
 </head>
 <body>
     <h1>🔴 YOLOv8 Live Feed</h1>
-    <img src="/video" width="720" />
+
+    <img id="videoFeed" src="/video" alt="Live Feed Not Available" />
 
     <div id="counts"></div>
 
-    
-<script>
-setInterval(() => {
-    fetch('/counts')
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("counts").innerHTML = 
-                Object.entries(data).map(([k, v]) => `<p>${k}: ${v}</p>`).join('');
-        });
-}, 2000);
-</script>
-
+    <script>
+        setInterval(() => {
+            fetch('/counts')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("counts").innerHTML =
+                        Object.entries(data).map(([k, v]) => `<p>${k}: ${v}</p>`).join('');
+                });
+        }, 2000);
+    </script>
 </body>
 </html>
