@@ -1,13 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import StreamingResponse, Response
 from datetime import datetime
-from collections import Counte
+from collections import Counter
 import cv2
 import os
 
-from app.detector import detect_from_frame  # YOLO detection
+from app.detector import detect_from_frame  # YOLO detection logic
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -15,7 +14,7 @@ templates = Jinja2Templates(directory="app/templates")
 # Initialize webcam
 camera = cv2.VideoCapture(0)
 
-# Snapshot saving setup
+# Create snapshot directory if it doesn't exist
 SNAPSHOT_DIR = "snapshots"
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
@@ -28,7 +27,7 @@ def gen_frames():
         if not success:
             continue
 
-        # YOLO detection + annotation
+        # Run YOLO detection
         annotated_frame, results = detect_from_frame(frame)
 
         # Count detected objects
@@ -43,7 +42,7 @@ def gen_frames():
             snapshot_path = os.path.join(SNAPSHOT_DIR, f"snapshot_{timestamp}.jpg")
             cv2.imwrite(snapshot_path, annotated_frame)
 
-        # Convert to bytes
+        # Encode frame to JPEG
         _, buffer = cv2.imencode('.jpg', annotated_frame)
         frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
