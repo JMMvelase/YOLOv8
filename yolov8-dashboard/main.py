@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request 
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
@@ -11,21 +11,23 @@ from app.detector import detect_from_frame  # YOLO detection logic
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 
-# Initialize webcam
-camera = cv2.VideoCapture(0)
-
-# Create snapshot directory if it doesn't exist
 SNAPSHOT_DIR = "snapshots"
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
-# Object detection count tracker
 object_counts = Counter()
 
 def gen_frames():
+    camera = cv2.VideoCapture(0)
+
+    if not camera.isOpened():
+        print("❌ Error: Could not open webcam.")
+        return
+
     while True:
         success, frame = camera.read()
         if not success:
-            continue
+            print("❌ Failed to grab frame.")
+            break
 
         # Run YOLO detection
         annotated_frame, results = detect_from_frame(frame)
@@ -45,8 +47,11 @@ def gen_frames():
         # Encode frame to JPEG
         _, buffer = cv2.imencode('.jpg', annotated_frame)
         frame_bytes = buffer.tobytes()
+
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+    camera.release()
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -66,4 +71,4 @@ def video():
 
 @app.get("/counts")
 async def get_counts():
-    return JSONResponse(object_counts)
+    return JSONResponse(content=dict(object_counts))
