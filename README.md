@@ -49,8 +49,11 @@ pip install -r requirements.txt
 pip install fastapi uvicorn opencv-python ultralytics jinja2 ''''
 
 ▶️ Run the App
+
 uvicorn main:app --reload
 
 🔍 Debugging Tips
+
 test your webcam:
+
 python test_webcam.py
