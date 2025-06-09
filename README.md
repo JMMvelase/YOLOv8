@@ -37,10 +37,15 @@ yolov8-dashboard/
 
 
 git clone https://github.com/your-username/yolov8-dashboard.git
+
 cd yolov8-dashboard
+
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+ venv\Scripts\activate
+ 
 pip install -r requirements.txt
+
 pip install fastapi uvicorn opencv-python ultralytics jinja2 ''''
 
 ▶️ Run the App
