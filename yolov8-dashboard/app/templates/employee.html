@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Detection History</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .snapshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .snapshot-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+
+        .snapshot-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .detection-info {
+            margin-top: 10px;
+        }
+
+        .detection-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .detection-item.present {
+            color: #28a745;
+        }
+
+        .detection-item.missing {
+            color: #dc3545;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-container">
+        <div class="nav-buttons">
+            <button onclick="window.location.href='dashboard.html'    "><i>🏠</i> Home</button>
+            <button onclick="window.location.href='employee.html'"><i>👤</i> Employees</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h2>Employee Detection History</h2>
+        <div class="snapshot-grid" id="snapshotContainer">
+            <!-- Snapshots will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        function updateSnapshots() {
+            fetch('/get_snapshots')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('snapshotContainer');
+                    container.innerHTML = '';
+                    
+                    data.forEach(snapshot => {
+                        const card = document.createElement('div');
+                        card.className = 'snapshot-card';
+                        
+                        const timestamp = new Date(snapshot.timestamp).toLocaleString();
+                        
+                        card.innerHTML = `
+                            <img src="${snapshot.image_url}" class="snapshot-image" alt="Employee Snapshot">
+                            <div class="detection-info">
+                                ${Object.entries(snapshot.detections).map(([item, present]) => `
+                                    <div class="detection-item ${present ? 'present' : 'missing'}">
+                                        <span>${item}: ${present ? '✓' : '✗'}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="timestamp">${timestamp}</div>
+                        `;
+                        
+                        container.appendChild(card);
+                    });
+                });
+        }
+
+        // Update snapshots every 5 seconds
+        setInterval(updateSnapshots, 5000);
+        updateSnapshots();
+    </script>
+</body>
+</html> 
