@@ -7,22 +7,27 @@
      
 </head>
 <body>
+    <body>
     <div class="nav-container">
         <div class="nav-buttons">
             <button><i>🏠</i> Home</button>
             <button><i>📝</i> Report</button>
             <button><i>👥</i> Resources</button>
-            <button onclick="window.location.href='employee.html'"><i>👤</i> Employees</button>       
+            <button onclick="window.location.href='employee.html'"><i>👤</i> Employees</button>
+        </div>
     </div>
 
-       <div class="right-panel">
-    <div class="box">
-        <h3>Live Camera Feed</h3>
-        <img id="videoFeed" src="/video" alt="Live Feed Not Available" />
-    </div>
-</div>
+    <div class="main-content"> <!-- Main to fix the view in the frontend -->
+        
 
+        <div class="right-panel">
+            <div class="box">
+                <h3>Live Camera Feed</h3>
+                <img id="videoFeed" src="/video" alt="Live Feed Not Available" />
+            </div>
+        </div>
     </div>
+
 
     <script>
         function updateCounts() {
