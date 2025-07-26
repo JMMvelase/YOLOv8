@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+     
+</head>
+<body>
+    <body>
+    <div class="nav-container">
+        <div class="nav-buttons">
+            <button><i>🏠</i> Home</button>
+            <button><i>📝</i> Report</button>
+            <button><i>👥</i> Resources</button>
+            <button onclick="window.location.href='employee.html'"><i>👤</i> Employees</button>
+        </div>
+    </div>
+
+    <div class="main-content"> <!-- Main to fix the view in the frontend -->
+        
+
+        <div class="right-panel">
+            <div class="box">
+                <h3>Live Camera Feed</h3>
+                <img id="videoFeed" src="/video" alt="Live Feed Not Available" />
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        function updateCounts() {
+            fetch('/counts')
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    for (const [key, value] of Object.entries(data)) {
+                        html += `<p>${key}: <span class="bar" style="width: ${Math.min(value * 10, 100)}px;"></span> ${value}</p>`;
+                    }
+                    document.getElementById("counts").innerHTML = html;
+                });
+        }
+        setInterval(updateCounts, 2000);
+        updateCounts();
+    </script>
+</body>
+</html>
+

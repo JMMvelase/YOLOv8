@@ -1,0 +1,93 @@
+ .nav-container {
+            display: flex;
+            background-color: #f8f9fa;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-buttons button {
+            padding: 8px 16px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-buttons button:hover {
+            background-color: #0056b3;
+        }
+        
+        .nav-buttons button.active {
+            background-color: #0056b3;
+        }
+        
+        .main-content {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .left-panel {
+           flex: 1.5; /* Takes more space */
+                }
+
+         .right-panel {
+            flex: 1; /* Slightly narrower */
+            }
+
+        
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+#videoFeed {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain; 
+}
+
+        .main-content {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: wrap;}
+
+    .right-panel {
+    flex: 1;
+    min-width: 300px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+
+        .nav-link-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+      }
+
+.nav-link-button:hover {
+    background-color: #0056b3;
+}
+
