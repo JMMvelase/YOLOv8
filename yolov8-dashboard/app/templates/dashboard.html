@@ -1,49 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Project Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
-     
+  <meta charset="UTF-8">
+  <title>Vision Dashboard</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <body>
-    <div class="nav-container">
-        <div class="nav-buttons">
-            <button><i>🏠</i> Home</button>
-            <button><i>📝</i> Report</button>
-            <button><i>👥</i> Resources</button>
-            <button onclick="window.location.href='employee.html'"><i>👤</i> Employees</button>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-sky-500/40 font-sans">
+
+  <!-- ========== TOP NAV ========== -->
+  <header class="backdrop-blur bg-slate-900/60 sticky top-0 z-50 border-b border-slate-800">
+    <nav class="mx-auto max-w-7xl px-6 flex items-center justify-between h-16">
+      <h1 class="text-lg tracking-tight font-semibold"> PPE DETECTION </h1>
+
+      <ul class="flex gap-6 text-sm">
+        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('/')"><i data-lucide="home" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Home</span></button></li>
+        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('#report')"><i data-lucide="file-text" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Report</span></button></li>
+        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('#resources')"><i data-lucide="users" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Resources</span></button></li>
+        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="window.location.href='employee.html'"><i data-lucide="user" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Employees</span></button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ========== MAIN LAYOUT ========== -->
+  <main class="mx-auto max-w-7xl px-6 py-10 grid lg:grid-cols-12 gap-10">
+
+    <!-- ------ LIVE FEED ------ -->
+   <!-- ------ LIVE FEED ------ -->
+<section class="lg:col-span-8 flex flex-col gap-4">
+  <h2 class="text-xl tracking-tight font-semibold">Live Camera Feed</h2>
+  <div class="relative rounded-xl overflow-hidden ring-1 ring-slate-800 shadow-lg">
+    <img id="videoFeed"
+         src="/video"
+         alt="Live Feed Not Available"
+         class="w-full h-full object-cover"/>
+  </div>
+</section>
+
+
+    <!-- ------ DATA PANEL ------ -->
+    <aside class="lg:col-span-4 flex flex-col gap-8">
+      <!-- Object Counts -->
+      <section class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg">
+        <h3 class="text-lg tracking-tight font-semibold mb-4">Detections</h3>
+        <div class="space-y-4" id="countList"></div>
+      </section>
+
+      <!-- Bar Chart -->
+      <section class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg">
+        <h3 class="text-lg tracking-tight font-semibold mb-4">Frequency Chart</h3>
+        <div class="relative">
+          <canvas id="countChart" height="180"></canvas>
         </div>
-    </div>
+      </section>
+    </aside>
+  </main>
 
-    <div class="main-content"> <!-- Main to fix the view in the frontend -->
-        
+  <!-- ========== FOOTER ========== -->
+  <footer class="text-xs text-slate-500 text-center py-6 border-t border-slate-800">
+    Built with ♥︎ for realtime vision monitoring. © 2024
+  </footer>
 
-        <div class="right-panel">
-            <div class="box">
-                <h3>Live Camera Feed</h3>
-                <img id="videoFeed" src="/video" alt="Live Feed Not Available" />
-            </div>
-        </div>
-    </div>
+  <!-- ========== INTERACTION ========== -->
+  <script>
+    // Init Lucide
+    lucide.createIcons();
 
+    // Simple element fade/slide-in on load
+    document.querySelectorAll('header, main > *, footer').forEach((el, idx) => {
+      el.style.opacity = 0;
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity .6s ease, transform .6s ease';
+      setTimeout(() => {
+        el.style.opacity = 1;
+        el.style.transform = 'translateY(0)';
+      }, 100 + idx * 100);
+    });
 
-    <script>
-        function updateCounts() {
-            fetch('/counts')
-                .then(res => res.json())
-                .then(data => {
-                    let html = '';
-                    for (const [key, value] of Object.entries(data)) {
-                        html += `<p>${key}: <span class="bar" style="width: ${Math.min(value * 10, 100)}px;"></span> ${value}</p>`;
-                    }
-                    document.getElementById("counts").innerHTML = html;
-                });
+    // Navigation helper
+    const navigate = hash => window.location.hash = hash;
+
+    // ------------- Chart.js Setup -------------
+    const ctx = document.getElementById('countChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {labels: [], datasets: [{label: 'Count', data: [], backgroundColor: '#0ea5e9'}]},
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {legend: {display: false}},
+        scales: {
+          x: {ticks: {color: '#94a3b8'}, grid: {display: false, color: '#1e293b'}},
+          y: {ticks: {color: '#94a3b8'}, grid: {color: '#1e293b'}}
         }
-        setInterval(updateCounts, 2000);
-        updateCounts();
-    </script>
-</body>
-</html>
+      }
+    });
 
+    // ------------- Counts Fetching -------------
+    async function updateCounts() {
+      try {
+        const res = await fetch('/counts');
+        const data = await res.json();
+
+        // List
+        const list = document.getElementById('countList');
+        list.innerHTML = '';
+        Object.entries(data).forEach(([k, v]) => {
+          const barLen = Math.min(v * 6, 160);
+          list.insertAdjacentHTML('beforeend', `
+            <div class="flex items-center justify-between text-sm">
+              <span class="capitalize">${k}</span>
+              <span class="flex-1 mx-4 bg-slate-800 h-2 rounded overflow-hidden">
+                <span style="width:${barLen}px" class="block h-full bg-sky-500"></span>
+              </span>
+              <span class="tabular-nums">${v}</span>
+            </div>
+          `);
+        });
+
+        // Chart
+        chart.data.labels = Object.keys(data);
+        chart.data.datasets[0].data = Object.values(data);
+        chart.update();
+
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    updateCounts();
+    setInterval(updateCounts, 2000);
+  </script>
+</body>
+</html> take the below code and integrate the video feed inside the above one 
