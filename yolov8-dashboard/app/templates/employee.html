@@ -1,105 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Employee Detection History</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .snapshot-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
+  <meta charset="UTF-8">
+  <title>Employee Detection History</title>
 
-        .snapshot-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 15px;
-        }
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
 
-        .snapshot-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .detection-info {
-            margin-top: 10px;
-        }
-
-        .detection-item {
-            display: flex;
-            align-items: center;
-            margin: 5px 0;
-        }
-
-        .detection-item.present {
-            color: #28a745;
-        }
-
-        .detection-item.missing {
-            color: #dc3545;
-        }
-
-        .timestamp {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-    </style>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
-    <div class="nav-container">
-        <div class="nav-buttons">
-            <button onclick="window.location.href='dashboard.html'"><i>🏠</i> Home</button>
-            <button onclick="window.location.href='employee.html'"><i>👤</i> Employees</button>
-        </div>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-sky-500/40 font-sans">
+
+  <!-- ========== TOP NAV ========== -->
+  <header class="backdrop-blur bg-slate-900/60 sticky top-0 z-50 border-b border-slate-800">
+    <nav class="mx-auto max-w-7xl px-6 flex items-center justify-between h-16">
+      <h1 class="text-lg tracking-tight font-semibold"> PPE DETECTION </h1>
+
+      <ul class="flex gap-6 text-sm">
+        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('dashboard.html')"><i data-lucide="home" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Home</span></button></li>
+        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('employee.html')"><i data-lucide="user" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Employees</span></button></li>
+        <li><button class="group flex items-center gap-2 text-sky-400" onclick="navigate('history.html')"><i data-lucide="history" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">History</span></button></li>
+        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('reports.html')"><i data-lucide="file-text" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Reports</span></button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <main class="mx-auto max-w-7xl px-6 py-10">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <h2 class="text-2xl tracking-tight font-semibold mb-2">Employee Detection History</h2>
+      <p class="text-slate-400">Historical snapshots of PPE compliance detections</p>
     </div>
 
-    <div class="main-content">
-        <h2>Employee Detection History</h2>
-        <div class="snapshot-grid" id="snapshotContainer">
-            <!-- Snapshots will be dynamically added here -->
+    <!-- Filter Controls -->
+    <div class="mb-8 p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg">
+      <div class="flex flex-wrap gap-4 items-center">
+        <div class="flex items-center gap-2">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          <label class="text-sm font-medium">Date Range:</label>
+          <input type="date" id="startDate" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+          <span class="text-slate-400">to</span>
+          <input type="date" id="endDate" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent">
         </div>
+        
+        <div class="flex items-center gap-2">
+          <i data-lucide="filter" class="w-4 h-4"></i>
+          <label class="text-sm font-medium">Compliance:</label>
+          <select id="complianceFilter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+            <option value="all">All</option>
+            <option value="compliant">Compliant</option>
+            <option value="non-compliant">Non-Compliant</option>
+          </select>
+        </div>
+
+        <button onclick="applyFilters()" class="ml-auto px-4 py-2 bg-sky-600 hover:bg-sky-700 rounded-lg text-sm transition flex items-center gap-2">
+          <i data-lucide="search" class="w-4 h-4"></i>
+          Apply Filters
+        </button>
+      </div>
     </div>
 
-    <script>
-        function updateSnapshots() {
-            fetch('/get_snapshots')
-                .then(res => res.json())
-                .then(data => {
-                    const container = document.getElementById('snapshotContainer');
-                    container.innerHTML = '';
-                    
-                    data.forEach(snapshot => {
-                        const card = document.createElement('div');
-                        card.className = 'snapshot-card';
-                        
-                        const timestamp = new Date(snapshot.timestamp).toLocaleString();
-                        
-                        card.innerHTML = `
-                            <img src="${snapshot.image_url}" class="snapshot-image" alt="Employee Snapshot">
-                            <div class="detection-info">
-                                ${Object.entries(snapshot.detections).map(([item, present]) => `
-                                    <div class="detection-item ${present ? 'present' : 'missing'}">
-                                        <span>${item}: ${present ? '✓' : '✗'}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="timestamp">${timestamp}</div>
-                        `;
-                        
-                        container.appendChild(card);
-                    });
-                });
-        }
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg text-center">
+        <div class="text-2xl font-bold text-blue-400" id="totalSnapshots">0</div>
+        <div class="text-sm text-slate-400">Total Snapshots</div>
+      </div>
+      <div class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg text-center">
+        <div class="text-2xl font-bold text-green-400" id="compliantSnapshots">0</div>
+        <div class="text-sm text-slate-400">Compliant</div>
+      </div>
+      <div class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg text-center">
+        <div class="text-2xl font-bold text-red-400" id="nonCompliantSnapshots">0</div>
+        <div class="text-sm text-slate-400">Non-Compliant</div>
+      </div>
+      <div class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg text-center">
+        <div class="text-2xl font-bold text-yellow-400" id="compliancePercentage">0%</div>
+        <div class="text-sm text-slate-400">Compliance Rate</div>
+      </div>
+    </div>
 
-        // Update snapshots every 5 seconds
-        setInterval(updateSnapshots, 5000);
-        updateSnapshots();
-    </script>
-</body>
-</html> 
+    <!-- Snapshots Grid -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Detection Snapshots</h3>
+        <div class="flex items-center gap-2 text-sm text-slate-400">
+          <span id="loadingIndicator" class="hidden">
+            <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+            Loading...
+          </span>
+          <span id="lastUpdated">Last updated: Never</span>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="snapshotContainer">
+        <!-- Loading placeholder -->
+        <div class="col-span-full text-center py-12">
+          <i data-lucide="camera" class="w-12 h-12 mx-auto mb-4 text-slate-400"></i>
+          <p class="text-slate-400">Loading detection history...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load More Button -->
+    <div class="text-center mt-8">
+      <button id="loadMoreBtn" onclick="loadMoreSnapshots()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition border border-slate-700 hidden">
+        Load More Snapshots
+      </button>
+    </div>
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="text-xs text-slate-500 text-center py-6 border-t border-slate-800">
+    Built with ♥︎ for workplace safety monitoring. © 2024
+  </footer>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script>
+    // Init Lucide
+    lucide.createIcons();
+
+    // Animation on load
+    document.querySelectorAll('header, main > *, footer').forEach((el, idx) => {
+      el.style.opacity = 0;
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity .6s ease, transform .6s ease';
+      setTimeout(() => {
+        el.style.opacity = 1;
+        el.style.transform = 'translateY(0)';
+      }, 100 + idx * 50);
+    });
+
+    // Navigation helper
+    const navigate = (page) => {
+      if (page.includes('.html')) {
+        window.location.href = page;
+      } else {
+        window.location.hash = page;
+      }
+    };
+
+    // Global variables
+    let allSnapshots = [];
+    let displayedSnapshots = 0;
+    const snapshotsPerPage = 12;
+
+    // Initialize date filters to last 7 days
+    function initializeDateFilters() {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+      
+      document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+      document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+    }
+
+    // Update snapshots from server
+    function updateSnapshots() {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      loadingIndicator.classList.remove('hidden');
+      
+      fetch('/get_snapshots')
+        .then(res => res.json())
+        .then(data => {
+          allSnapshots = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          displayedSnapshots = 0;
+          document.getElementById('snapshotContainer').innerHTML = '';
+          document.getElementById('loadMoreBtn').classList.add('hidden');
+          
+          updateStats();
+          loadMoreSnapshots();
+          
+          document.getElementById('lastUpdated').textContent = 
+            `Last updated: ${new Date().toLocaleTimeString()}`;
+        })
+        .catch(error => {
+          console.error('Error fetching snapshots:', error);
+          document.getElementById('snapshotContainer').innerHTML = `
+            <div class="col-span-full text-center py-12">
+              <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4 text-red-400"></i>
+              <p class="text-red-400">Failed to load snapshots</p>
+              <button onclick="updateSnapshots()" class="mt-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition">
+                Retry
+              </button>
+            </div>
+          `;
+        })
+        .finally(() => {
+          loadingIndicator.classList.add('hidden');
+        });
+    }
+
+    // Apply filters
+    function applyFilters() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const complianceFilter = document.getElementById('complianceFilter').value;
+      
+      let filteredSnapshots = [...allSnapshots];
+      
+      // Date filter
+      if (startDate) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => 
+          new Date(snapshot.timestamp) >= new Date(startDate)
+        );
+      }
+      if (endDate) {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => 
+          new Date(snapshot.timestamp) <= new Date(endDate + 'T23:59:59')
+        );
+      }
+      
+      // Compliance filter
+      if (complianceFilter !== 'all') {
+        filteredSnapshots = filteredSnapshots.filter(snapshot => {
+          const isCompliant = checkCompliance(snapshot.detections);
+          return complianceFilter === 'compliant' ? isCompliant : !isCompliant;
+        });
+      }
+      
+      // Reset display
+      allSnapshots = filteredSnapshots;
+      displayedSnapshots = 0;
+      document.getElementById('snapshotContainer').innerHTML = '';
+      document.getElementById('loadMoreBtn').classList.add('hidden');
+      
+      updateStats();
+      loadMoreSnapshots();
+    }
+
+    // Check if snapshot is compliant
+    function checkCompliance(detections) {
+      const requiredPPE = ['helmet', 'vest'];
+      return requiredPPE.every(item => detections[item]);
+    }
+
+    // Update statistics
+    function updateStats() {
+      const total = allSnapshots.length;
+      const compliant = allSnapshots.filter(s => checkCompliance(s.detections)).length;
+      const nonCompliant = total - compliant;
+      const percentage = total > 0 ? Math.round((compliant / total) * 100) : 0;
+      
+      document.getElementById('totalSnapshots').textContent = total;
+      document.getElementById('compliantSnapshots').textContent = compliant;
+      document.getElementById('nonCompliantSnapshots').textContent = nonCompliant;
+      document.getElementById('compliancePercentage').textContent = percentage + '%';
+    }
+
+    // Load more snapshots
+    function loadMoreSnapshots() {
+      const container = document.getElementById('snapshotContainer');
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      
+      const endIndex = Math.min(displayedSnapshots + snapshotsPerPage, allSnapshots.length);
+      
+      for (let i = displayedSnapshots; i < endIndex; i++) {
+        const snapshot = allSnapshots[i];
+        const card = createSnapshotCard(snapshot);
+        container.appendChild(card);
+      }
+      
+      displayedSnapshots = endIndex;
+      
+      // Show/hide load more button
+      if (displayedSnapshots < allSnapshots.length) {
+        loadMoreBtn.classList.remove('hidden');
+      } else {
+        loadMoreBtn.classList.add('hidden');
+      }
+      
+      // Show message if no snapshots
+      if (allSnapshots.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <i data-lucide="camera-off" class="w-12 h-12 mx-auto mb-4 text-slate-400"></i>
+            <p class="text-slate-400">No snapshots found</p>
+            <p class="text-sm text-slate-500 mt-1">Try adjusting your filters</p>
+          </div>
+        `;
+      }
+    }
+
+    // Create snapshot card
+    function createSnapshotCard(snapshot) {
+      const card = document.createElement('div');
+      const timestamp = new Date(snapshot.timestamp).toLocaleString();
+      const isCompliant = checkCompliance(snapshot.detections);
+      
+      card.className = `rounded-xl overflow-hidden ring-1 ring-slate-800 bg-slate-900/60 shadow-lg transition-all duration-300 hover:ring-slate-700 hover:scale-105`;
+      
+      const detectionItems = Object.entries(snapshot.detections).map(([item, present]) => {
+        const iconColor = present ? 'text-green-400' : 'text-red-400';
+        const icon = present ? 'check' : 'x';
+        return `
+          <div class="flex items-center justify-between text-sm">
+            <span class="capitalize">${item}</span>
+            <i data-lucide="${icon}" class="w-4 h-4 ${iconColor}"></i>
+          </div>
+        `;
+      }).join('');
+      
+      card.innerHTML = `
+        <div class="relative">
+            <img src="${snapshot.imageUrl}" alt="Snapshot taken at ${timestamp}" class="w-full h-48 object-cover">
+            <div class="absolute bottom-0 left-0 right-0 bg-black/50 p-4">
+                <h3 class="text-lg font-semibold">${timestamp}</h3>
+                <div class="mt-2 space
+                    ${detectionItems}
+                </div>  
+  </script>           
+ </body>
+</html>
