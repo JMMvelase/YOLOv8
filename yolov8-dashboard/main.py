@@ -11,12 +11,12 @@ import os
 import json
 
 from app.detector import detect_from_frame  # Ensure this is implemented properly in your project
-
+from database import init_db, insert_snapshot, get_all_snapshots
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
+init_db()
 # Initialize webcam
 camera = cv2.VideoCapture(0)
 
@@ -38,18 +38,15 @@ def gen_frames():
         if not success:
             continue
 
-        # Run YOLO detection
         annotated_frame, results = detect_from_frame(frame)
 
         # Take snapshot every 5 seconds
         current_time = datetime.now()
         if (current_time - last_snapshot_time).total_seconds() >= 5:
-            # Save snapshot
-            timestamp = current_time.strftime("%Y%m%d_%H%M%S")
-            snapshot_path = SNAPSHOT_DIR / f"snapshot_{timestamp}.jpg"
+            timestamp_str = current_time.strftime("%Y%m%d_%H%M%S")
+            snapshot_path = SNAPSHOT_DIR / f"snapshot_{timestamp_str}.jpg"
             cv2.imwrite(str(snapshot_path), annotated_frame)
-            
-            # Get detections from YOLO results
+
             detections = {}
             if results and results.boxes:
                 for box in results.boxes:
@@ -57,29 +54,19 @@ def gen_frames():
                     class_name = results.names[cls_id]
                     detections[class_name] = True
                     object_counts[class_name] += 1
-            
-            # Add snapshot to memory
-            snapshots.append({
-                "timestamp": current_time.isoformat(),
-                "image_url": f"/snapshots/snapshot_{timestamp}.jpg",
-                "detections": detections
-            })
-            
-            # Keep only last 100 snapshots
-            if len(snapshots) > 100:
-                old_snapshot = snapshots.pop(0)
-                old_path = SNAPSHOT_DIR / Path(old_snapshot["image_url"]).name
-                if old_path.exists():
-                    old_path.unlink()
-            
+
+            # Store in DB
+            insert_snapshot(
+                current_time.isoformat(),
+                f"/snapshots/snapshot_{timestamp_str}.jpg",
+                detections
+            )
+
             last_snapshot_time = current_time
 
-        # Encode frame to JPEG
         _, buffer = cv2.imencode('.jpg', annotated_frame)
-        frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
+               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
@@ -92,7 +79,7 @@ async def dashboard(request: Request):
     return templates.TemplateResponse("/dashboard.html", {"request": request})
 @app.get("/history.html", response_class=HTMLResponse)
 async def history(request: Request):    
-    return templates.TemplateResponse("/history.html", {"request": request})
+    return templates.TemplateResponse("history.html", {"request": request})
 
 
 @app.get("/video")
@@ -113,7 +100,7 @@ async def get_counts():
 
 @app.get("/get_snapshots")
 async def get_snapshots():
-    return JSONResponse(snapshots)
+    return JSONResponse(get_all_snapshots())
 
 @app.get("/snapshots/{filename}")
 async def serve_snapshot(filename: str):
