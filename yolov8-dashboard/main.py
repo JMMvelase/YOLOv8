@@ -84,9 +84,16 @@ def gen_frames():
 async def index(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
-@app.get("/employee", response_class=HTMLResponse)
+@app.get("/employee.html", response_class=HTMLResponse)
 async def employee(request: Request):
     return templates.TemplateResponse("employee.html", {"request": request})
+@app.get("/dashboard.html", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    return templates.TemplateResponse("/dashboard.html", {"request": request})
+@app.get("/history.html", response_class=HTMLResponse)
+async def history(request: Request):    
+    return templates.TemplateResponse("/history.html", {"request": request})
+
 
 @app.get("/video")
 def video():

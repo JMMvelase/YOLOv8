@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import cv2
 
-model = YOLO("weights/fine_tune.pt")  # Your trained model path
+model = YOLO("weights/best.1.0.pt")  # Your trained model path
 
 def detect_from_frame(frame):
     results = model(frame)

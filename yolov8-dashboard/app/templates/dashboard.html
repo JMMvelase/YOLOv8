@@ -26,8 +26,13 @@
         <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('/')"><i data-lucide="home" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Home</span></button></li>
         <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('#report')"><i data-lucide="file-text" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Report</span></button></li>
         <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="navigate('#resources')"><i data-lucide="users" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Resources</span></button></li>
-        <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="window.location.href='employee.html'"><i data-lucide="user" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Employees</span></button></li>
-      </ul>
+<li>
+  <a href="/employee.html" class="group flex items-center gap-2 hover:text-sky-400 transition">
+    <i data-lucide="user" class="w-4 h-4 stroke-[1.5]"></i>
+    <span class="hidden md:inline">Employees</span>
+  </a>
+</li>     
+ </ul>
     </nav>
   </header>
 
@@ -35,7 +40,7 @@
   <main class="mx-auto max-w-7xl px-6 py-10 grid lg:grid-cols-12 gap-10">
 
     <!-- ------ LIVE FEED ------ -->
-   <!-- ------ LIVE FEED ------ -->
+  
 <section class="lg:col-span-8 flex flex-col gap-4">
   <h2 class="text-xl tracking-tight font-semibold">Live Camera Feed</h2>
   <div class="relative rounded-xl overflow-hidden ring-1 ring-slate-800 shadow-lg">
