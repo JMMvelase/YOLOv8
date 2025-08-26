@@ -75,6 +75,16 @@
     </div>
   </main>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
+      <div class="relative max-w-4xl w-full">
+        <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-sky-400 transition">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+        <img id="modalImage" src="" alt="Zoomed snapshot" class="w-full h-auto rounded-lg shadow-2xl">
+      </div>
+    </div>
+
     <!-- ========== FOOTER ========== -->
     <footer class="text-xs text-slate-500 text-center py-6 border-t border-slate-800">
         Built with Anger by Ndumiso Mthembu
@@ -83,6 +93,36 @@
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        // Modal functions
+        function openImageModal(imagePath) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imagePath;
+            modal.classList.remove('hidden');
+            // Add escape key listener
+            document.addEventListener('keydown', closeOnEscape);
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            // Remove escape key listener
+            document.removeEventListener('keydown', closeOnEscape);
+        }
+
+        function closeOnEscape(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        }
+
+        // Click outside to close
+        document.getElementById('imageModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'imageModal') {
+                closeImageModal();
+            }
+        });
 
         $(document).ready(function() {
             // Initialize date range picker with dark theme
@@ -128,7 +168,10 @@
             return `
                 <div class="rounded-xl overflow-hidden ring-1 ring-slate-800 bg-slate-900/60 shadow-lg transition hover:ring-sky-500/20">
                     <div class="relative">
-                        <img src="${snapshot.image_path}" alt="Detection snapshot" class="w-full h-48 object-cover">
+                        <img src="${snapshot.image_path}" 
+                             alt="Detection snapshot" 
+                             class="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition"
+                             onclick="openImageModal('${snapshot.image_path}')">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                             <p class="text-sm font-medium text-slate-200">${date}</p>
                         </div>
