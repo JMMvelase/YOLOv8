@@ -36,12 +36,33 @@ def insert_snapshot(timestamp: str, image_path: str, detections: Dict):
     conn.commit()
     conn.close()
 
-def get_all_snapshots() -> List[Dict]:
-    """Retrieve all snapshots from the database."""
+def get_all_snapshots(start_date: str = None, end_date: str = None) -> List[Dict]:
+    """
+    Retrieve snapshots from the database with optional date filtering.
+    Args:
+        start_date: ISO format date string (YYYY-MM-DD)
+        end_date: ISO format date string (YYYY-MM-DD)
+    """
     conn = sqlite3.connect(str(DATABASE_PATH))
     cursor = conn.cursor()
     
-    cursor.execute("SELECT timestamp, image_path, detections FROM snapshots ORDER BY timestamp DESC")
+    query = "SELECT timestamp, image_path, detections FROM snapshots"
+    params = []
+    
+    if start_date or end_date:
+        conditions = []
+        if start_date:
+            conditions.append("date(timestamp) >= date(?)")
+            params.append(start_date)
+        if end_date:
+            conditions.append("date(timestamp) <= date(?)")
+            params.append(end_date)
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+    
+    query += " ORDER BY timestamp DESC"
+    
+    cursor.execute(query, params)
     rows = cursor.fetchall()
     
     snapshots = []

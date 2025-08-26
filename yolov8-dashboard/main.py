@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
 from collections import Counter
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from typing import Optional
 
 import cv2
 import os
@@ -99,8 +100,11 @@ async def get_counts():
     return JSONResponse(object_counts)
 
 @app.get("/get_snapshots")
-async def get_snapshots():
-    return JSONResponse(get_all_snapshots())
+async def get_snapshots(
+    start_date: Optional[str] = Query(None, description="Start date in YYYY-MM-DD format"),
+    end_date: Optional[str] = Query(None, description="End date in YYYY-MM-DD format")
+):
+    return JSONResponse(get_all_snapshots(start_date, end_date))
 
 @app.get("/snapshots/{filename}")
 async def serve_snapshot(filename: str):
