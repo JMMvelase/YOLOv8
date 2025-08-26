@@ -16,7 +16,12 @@ from database import init_db, insert_snapshot, get_all_snapshots
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# Mount static files after ensuring the directory exists
+static_dir = Path("app/static")
+static_dir.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
 init_db()
 # Initialize webcam
 camera = cv2.VideoCapture(0)

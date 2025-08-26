@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Detection History</title>
+  
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
@@ -10,21 +11,15 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Date Range Picker -->
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <!-- jQuery and Required Libraries -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Moment.js -->
-    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-
-    <!-- Date Range Picker CSS & JS -->
-    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/style-history.css') }}">
+  
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-sky-500/40 font-sans">
 
@@ -86,50 +81,102 @@
     </footer>
 
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
         $(document).ready(function() {
-            // Initialize date range picker
-            $('input[name="daterange"]').daterangepicker({
+            // Initialize date range picker with dark theme
+            $('#daterange').daterangepicker({
                 opens: 'left',
                 startDate: moment().subtract(7, 'days'),
                 endDate: moment(),
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
                 locale: {
                     format: 'YYYY-MM-DD'
                 }
-            }, function(start, end, label) {
+            }, function(start, end) {
                 loadSnapshots(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
             });
 
-            // Initial load of snapshots
+            // Initial load
             loadSnapshots();
         });
 
-        function loadSnapshots(startDate = null, endDate = null) {
+        function showLoading() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('noResults').classList.add('hidden');
+            document.getElementById('snapshotsList').innerHTML = '';
+        }
+
+        function showNoResults() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('noResults').classList.remove('hidden');
+            document.getElementById('snapshotsList').innerHTML = '';
+        }
+
+        function createSnapshotCard(snapshot) {
+            const date = new Date(snapshot.timestamp).toLocaleString();
+            const detections = Object.keys(snapshot.detections).join(', ') || 'None';
+            
+            return `
+                <div class="rounded-xl overflow-hidden ring-1 ring-slate-800 bg-slate-900/60 shadow-lg transition hover:ring-sky-500/20">
+                    <div class="relative">
+                        <img src="${snapshot.image_path}" alt="Detection snapshot" class="w-full h-48 object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                            <p class="text-sm font-medium text-slate-200">${date}</p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-slate-400">Detections: ${detections}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadSnapshots(startDate = null, endDate = null) {
+            showLoading();
+
             let url = '/get_snapshots';
             if (startDate && endDate) {
                 url += `?start_date=${startDate}&end_date=${endDate}`;
             }
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const grid = document.getElementById('history-grid');
-                    grid.innerHTML = ''; // Clear existing content
+            try {
+                const response = await fetch(url);
+                const snapshots = await response.json();
 
-                    data.forEach(snapshot => {
-                        const timestamp = new Date(snapshot.timestamp).toLocaleString();
-                        const detections = Object.keys(snapshot.detections).join(', ');
-                        
-                        const card = `
-                            <div class="bg-white rounded-lg shadow p-4">
-                                <img src="${snapshot.image_path}" alt="Detection snapshot" class="w-full h-48 object-cover rounded mb-2">
-                                <p class="text-sm text-gray-600">${timestamp}</p>
-                                <p class="text-sm font-semibold">Detections: ${detections || 'None'}</p>
-                            </div>
-                        `;
-                        grid.innerHTML += card;
-                    });
-                })
-                .catch(error => console.error('Error loading snapshots:', error));
+                if (snapshots.length === 0) {
+                    showNoResults();
+                    return;
+                }
+
+                const snapshotsList = document.getElementById('snapshotsList');
+                snapshotsList.innerHTML = snapshots
+                    .map(snapshot => createSnapshotCard(snapshot))
+                    .join('');
+
+                document.getElementById('loadingState').classList.add('hidden');
+            } catch (error) {
+                console.error('Error loading snapshots:', error);
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('snapshotsList').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-4 text-red-400"></i>
+                        <p class="text-red-400">Failed to load snapshots</p>
+                        <button onclick="loadSnapshots()" class="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
         }
     </script>
 </body>

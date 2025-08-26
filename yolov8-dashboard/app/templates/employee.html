@@ -64,8 +64,10 @@
           <label class="text-sm font-medium">PPE Type:</label>
           <select id="ppeFilter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent">
             <option value="all">All PPE</option>
-            <option value="helmet">Helmet</option>
-            <option value="vest">Safety Vest</option>
+            <option value="safety glasses">Safety Glasses</option>
+            <option value="high visibility vest">High Visibility Vest</option>
+            <option value="hard hat">Hard Hat</option>
+            <option value="no vest">No Vest</option>
           </select>
         </div>
 
@@ -231,21 +233,19 @@
       ppeDistributionChart = new Chart(distributionCtx, {
         type: 'bar',
         data: {
-          labels: ['Helmet', 'Safety Vest'],
+          labels: ['High Visibility Vest', 'No Vest'],
           datasets: [{
             label: 'Detected',
             data: [0, 0],
-            backgroundColor: ['rgba(56, 189, 248, 0.5)', 'rgba(34, 197, 94, 0.5)'],
-            borderColor: ['rgb(56, 189, 248)', 'rgb(34, 197, 94)'],
+            backgroundColor: ['rgba(56, 189, 248, 0.5)', 'rgba(239, 68, 68, 0.5)'],
+            borderColor: ['rgb(56, 189, 248)', 'rgb(239, 68, 68)'],
             borderWidth: 1
           }]
         },
         options: {
           responsive: true,
           scales: {
-            y: {
-              beginAtZero: true
-            }
+            y: { beginAtZero: true }
           }
         }
       });
@@ -278,16 +278,12 @@
       complianceTrendChart.update();
 
       // Update PPE Distribution
-      const ppeCount = { helmet: 0, vest: 0 };
+      const vestCount = { high: 0, none: 0 };
       snapshots.forEach(snapshot => {
-        if (snapshot.detections.helmet) ppeCount.helmet++;
-        if (snapshot.detections.vest) ppeCount.vest++;
+        if (snapshot.detections['high visibility vest']) vestCount.high++;
+        if (snapshot.detections['no vest']) vestCount.none++;
       });
-
-      ppeDistributionChart.data.datasets[0].data = [
-        ppeCount.helmet,
-        ppeCount.vest
-      ];
+      ppeDistributionChart.data.datasets[0].data = [vestCount.high, vestCount.none];
       ppeDistributionChart.update();
     }
 
@@ -368,7 +364,7 @@
 
       // PPE filter
       if (ppeFilter !== 'all') {
-        filteredSnapshots = filteredSnapshots.filter(snapshot => 
+        filteredSnapshots = filteredSnapshots.filter(snapshot =>
           snapshot.detections[ppeFilter]
         );
       }
@@ -388,21 +384,17 @@
     function checkCompliance(detections) {
       // Required PPE items
       const requiredPPE = {
-        helmet: {
-          required: true,
-          name: 'Safety Helmet'
+        'safety glasses': {
+          required: true
         },
-        vest: {
-          required: true,
-          name: 'Safety Vest'
+        'high visibility vest': {
+          required: true
         },
-        goggles: {
-          required: false,  // Optional but recommended
-          name: 'Safety Goggles'
+        'hard hat': {
+          required: true
         },
-        gloves: {
-          required: false,  // Optional but recommended
-          name: 'Safety Gloves'
+        'safety gloves': {
+          required: false  // Optional but recommended
         }
       };
 
@@ -421,7 +413,7 @@
       const compliant = allSnapshots.filter(s => checkCompliance(s.detections)).length;
       const nonCompliant = total - compliant;
       const percentage = total > 0 ? Math.round((compliant / total) * 100) : 0;
-      
+
       document.getElementById('totalSnapshots').textContent = total;
       document.getElementById('compliantSnapshots').textContent = compliant;
       document.getElementById('nonCompliantSnapshots').textContent = nonCompliant;
