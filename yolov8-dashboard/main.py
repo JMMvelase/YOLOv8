@@ -25,6 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 templates = Jinja2Templates(directory="app/templates")
 
 # Mount static files after ensuring the directory exists
@@ -38,7 +39,6 @@ camera = cv2.VideoCapture(0)
 if not camera.isOpened():
     print("Warning: Could not open video stream.")
     camera = None
-
 # Create snapshot directory if it doesn't exist
 SNAPSHOT_DIR = Path("snapshots")
 SNAPSHOT_DIR.mkdir(exist_ok=True)
@@ -51,7 +51,7 @@ snapshots = []
 
 def gen_frames():
     last_snapshot_time = datetime.now()
-
+    
     while True:
         if camera:
             success, frame = camera.read()
