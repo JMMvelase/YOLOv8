@@ -1,7 +1,0 @@
-{
-    "python.testing.pytestArgs": [
-        "yolov8-dashboard"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
-}
