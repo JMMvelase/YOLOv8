@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request, Query
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
@@ -16,16 +15,6 @@ from app.detector import detect_from_frame  # Ensure this is implemented properl
 from database import init_db, insert_snapshot, get_all_snapshots
 
 app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
 templates = Jinja2Templates(directory="app/templates")
 
 # Mount static files after ensuring the directory exists
@@ -36,9 +25,7 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 init_db()
 # Initialize webcam
 camera = cv2.VideoCapture(0)
-if not camera.isOpened():
-    print("Warning: Could not open video stream.")
-    camera = None
+
 # Create snapshot directory if it doesn't exist
 SNAPSHOT_DIR = Path("snapshots")
 SNAPSHOT_DIR.mkdir(exist_ok=True)
@@ -53,14 +40,9 @@ def gen_frames():
     last_snapshot_time = datetime.now()
     
     while True:
-        if camera:
-            success, frame = camera.read()
-            if not success:
-                continue
-        else:
-            # Create a black frame if no camera
-            frame = cv2.UMat(480, 640, cv2.CV_8UC3)
-            frame.setTo([0, 0, 0])
+        success, frame = camera.read()
+        if not success:
+            continue
 
         annotated_frame, results = detect_from_frame(frame)
 
