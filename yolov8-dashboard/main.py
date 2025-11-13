@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
@@ -15,6 +16,15 @@ from app.detector import detect_from_frame  # Ensure this is implemented properl
 from database import init_db, insert_snapshot, get_all_snapshots
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 templates = Jinja2Templates(directory="app/templates")
 
 # Mount static files after ensuring the directory exists
