@@ -104,8 +104,10 @@
       }
     });
 
-    // ------------- Counts Fetching -------------
+    // ------------- Video and Counts Fetching -------------
     const API_BASE = "https://zakhi-ai-ppe-detection.onrender.com";
+    document.getElementById('videoFeed').src = `${API_BASE}/video`;
+
     async function updateCounts() {
       try {
         const res = await fetch(`${API_BASE}/counts`);
