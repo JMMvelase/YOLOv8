@@ -298,6 +298,7 @@
     }
 
     // Update snapshots from server
+    const API_BASE = "https://zakhi-ai-ppe-detection.onrender.com";
     function updateSnapshots() {
       const loadingIndicator = document.getElementById('loadingIndicator');
       loadingIndicator.classList.remove('hidden');
@@ -305,7 +306,7 @@
       const startDate = document.getElementById('startDate').value;
       const endDate = document.getElementById('endDate').value;
       
-      let url = '/get_snapshots';
+      let url = `${API_BASE}/get_snapshots`;
       if (startDate && endDate) {
         url += `?start_date=${startDate}&end_date=${endDate}`;
       }

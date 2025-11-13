@@ -183,10 +183,11 @@
             `;
         }
 
+        const API_BASE = "https://zakhi-ai-ppe-detection.onrender.com";
         async function loadSnapshots(startDate = null, endDate = null) {
             showLoading();
 
-            let url = '/get_snapshots';
+            let url = `${API_BASE}/get_snapshots`;
             if (startDate && endDate) {
                 url += `?start_date=${startDate}&end_date=${endDate}`;
             }

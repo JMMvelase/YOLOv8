@@ -25,6 +25,9 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 init_db()
 # Initialize webcam
 camera = cv2.VideoCapture(0)
+if not camera.isOpened():
+    print("Warning: Could not open video stream.")
+    camera = None
 
 # Create snapshot directory if it doesn't exist
 SNAPSHOT_DIR = Path("snapshots")
@@ -40,9 +43,14 @@ def gen_frames():
     last_snapshot_time = datetime.now()
     
     while True:
-        success, frame = camera.read()
-        if not success:
-            continue
+        if camera:
+            success, frame = camera.read()
+            if not success:
+                continue
+        else:
+            # Create a black frame if no camera
+            frame = cv2.UMat(480, 640, cv2.CV_8UC3)
+            frame.setTo([0, 0, 0])
 
         annotated_frame, results = detect_from_frame(frame)
 
