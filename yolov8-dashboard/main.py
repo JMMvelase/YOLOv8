@@ -28,6 +28,9 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 init_db()
 # Initialize webcam
 camera = cv2.VideoCapture(0)
+if not camera.isOpened():
+    print("Warning: Could not open video stream.")
+    camera = None
 
 # Background capture thread controls
 capture_thread = None

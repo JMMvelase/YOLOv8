@@ -105,9 +105,10 @@
     });
 
     // ------------- Counts Fetching -------------
+    const API_BASE = "https://zakhi-ai-ppe-detection.onrender.com";
     async function updateCounts() {
       try {
-        const res = await fetch('/counts');
+        const res = await fetch(`${API_BASE}/counts`);
         const data = await res.json();
 
         // List
