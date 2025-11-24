@@ -38,10 +38,38 @@
 <section class="lg:col-span-8 flex flex-col gap-4">
   <h2 class="text-xl tracking-tight font-semibold">Live Camera Feed</h2>
   <div class="relative rounded-xl overflow-hidden ring-1 ring-slate-800 shadow-lg">
-    <img id="videoFeed"
-         src="/video"
-         alt="Live Feed Not Available"
-         class="w-full h-full object-cover"/>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+      <!-- Camera 0 -->
+      <div class="relative bg-slate-800">
+        <img id="videoFeed0" src="/video0" alt="Camera 0 - Click to enlarge" class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition"/>
+        <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 1</span>
+      </div>
+
+      <!-- Divider -->
+      <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700"></div>
+      <!-- Camera 1 -->
+      <div class="relative bg-slate-800">
+        <img id="videoFeed1" src="/video1" alt="Camera 1 - Click to enlarge" class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition"/>
+        <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 2</span>
+      </div>
+
+      <!-- Divider -->
+      <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700"></div>
+      <!-- Camera 1 -->
+      <div class="relative bg-slate-800">
+        <img id="videoFeed1" src="/video2" alt="Camera 1 - Click to enlarge" class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition"/>
+        <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 3</span>
+      </div>
+
+            <!-- Divider -->
+      <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700"></div>
+      <!-- Camera 1 -->
+      <div class="relative bg-slate-800">
+        <img id="videoFeed1" src="/video3" alt="Camera 1 - Click to enlarge" class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition"/>
+        <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 4</span>
+      </div>
+
+    </div>
   </div>
 </section>
 
@@ -69,7 +97,14 @@
     Built with Anger by Ndumiso Mthembu
   </footer>
 
-  
+  <!-- Modal for enlarged view -->
+  <div id="viewerModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+    <div class="relative max-w-5xl w-full mx-4">
+      <button id="viewerClose" class="absolute right-2 top-2 text-white bg-slate-800/70 rounded px-3 py-1">Close</button>
+      <img id="viewerImg" src="" alt="Enlarged Feed" class="w-full h-auto rounded shadow-lg border"/>
+    </div>
+  </div>
+
   <script>
     // Init Lucide
     lucide.createIcons();
@@ -137,6 +172,40 @@
     }
     updateCounts();
     setInterval(updateCounts, 2000);
+
+    // --------- Click-to-enlarge viewer ---------
+    const modal = document.getElementById('viewerModal');
+    const viewerImg = document.getElementById('viewerImg');
+    const viewerClose = document.getElementById('viewerClose');
+
+    function openViewer(src, title) {
+      // Use the MJPEG stream endpoint as the image src
+      viewerImg.src = src;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      // prevent background scrolling
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeViewer() {
+      // Stop stream by clearing src
+      viewerImg.src = '';
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Attach click handlers to both feeds
+    document.getElementById('videoFeed0').addEventListener('click', () => openViewer('/video0'));
+    document.getElementById('videoFeed1').addEventListener('click', () => openViewer('/video1'));
+    document.getElementById('videoFeed2').addEventListener('click', () => openViewer('/video2'));
+    document.getElementById('videoFeed3').addEventListener('click', () => openViewer('/video3'));
+
+
+    // Close handlers
+    viewerClose.addEventListener('click', closeViewer);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeViewer(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeViewer(); });
   </script>
 </body>
 </html> 
