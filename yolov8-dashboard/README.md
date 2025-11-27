@@ -36,7 +36,7 @@ yolov8-dashboard/
 ### 1. 🔁 Clone the repo
 
 
-git clone https://github.com/your-username/yolov8-dashboard.git
+git clone 
 
 cd yolov8-dashboard
 
