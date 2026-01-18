@@ -45,7 +45,7 @@
         <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 1</span>
       </div>
 
-      <!-- Divider -->
+      
       <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700"></div>
       <!-- Camera 1 -->
       <div class="relative bg-slate-800">
@@ -53,15 +53,15 @@
         <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 2</span>
       </div>
 
-      <!-- Divider -->
+      <!-- Divider 
       <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700"></div>
-      <!-- Camera 2 -->
+      - Camera 2 -
       <div class="relative bg-slate-800">
         <img id="videoFeed2" src="/video2" alt="Camera 2 - Click to enlarge" onerror="this.src='/static/camera-error.svg'; this.classList.add('opacity-50')"
         class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition"/>
         <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 3</span>
       </div>
-
+    -->
             
 
     </div>
@@ -94,8 +94,8 @@
 
   <!-- Modal for enlarged view -->
   <div id="viewerModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
-    <div class="relative max-w-5xl w-full mx-4">
-      <button id="viewerClose" class="absolute right-2 top-2 text-white bg-slate-800/70 rounded px-3 py-1">Close</button>
+    <div class="relative max-w-2xl w-full mx-4">
+      <button id="viewerClose" class="absolute left-2 top-2 text-white bg-slate-800/70 rounded px-3 py-1 hover:bg-slate-700">✕</button>
       <img id="viewerImg" src="" alt="Enlarged Feed" class="w-full h-auto rounded shadow-lg border"/>
     </div>
   </div>
@@ -193,8 +193,8 @@
     // Attach click handlers to both feeds
     document.getElementById('videoFeed0').addEventListener('click', () => openViewer('/video0'));
     document.getElementById('videoFeed1').addEventListener('click', () => openViewer('/video1'));
-    document.getElementById('videoFeed2').addEventListener('click', () => openViewer('/video2'));
-    document.getElementById('videoFeed3').addEventListener('click', () => openViewer('/video3'));
+   // document.getElementById('videoFeed2').addEventListener('click', () => openViewer('/video2'));
+   // document.getElementById('videoFeed3').addEventListener('click', () => openViewer('/video3'));
 
 
     // Close handlers

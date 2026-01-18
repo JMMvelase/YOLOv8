@@ -9,6 +9,7 @@ from typing import Optional
 import cv2
 import numpy as np
 import json
+import os
 
 from app.detector import detect_from_frame
 from database import init_db, insert_snapshot, get_all_snapshots, get_available_cameras
@@ -23,26 +24,45 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 init_db()
 
+# Camera sources from environment variables
+CAMERA_SOURCES = [
+    os.getenv("CAM0", "0"),
+    os.getenv("CAM1", None),
+    os.getenv("CAM2", None),
+    os.getenv("CAM3", None),
+]
+
 # Initialize available cameras only
-def get_camera(index):
+def get_camera(source):
     """Safely initialize a camera with error handling."""
+    if source is None:
+        return None
     try:
-        cam = cv2.VideoCapture(index)
+        # Try to convert to int (for camera index), otherwise use as file path
+        try:
+            source_val = int(source)
+        except (ValueError, TypeError):
+            source_val = source
+        
+        cam = cv2.VideoCapture(source_val)
         if not cam.isOpened():
             return None
         return cam
     except Exception as e:
-        print(f"Camera {index} failed: {e}")
+        print(f"Camera {source} failed: {e}")
         return None
 
 cameras = {}
-for i in range(4):  # Try up to 4 cameras
-    cam = get_camera(i)
-    if cam:
-        cameras[i] = cam
-        print(f"✓ Camera {i} initialized")
+for i, source in enumerate(CAMERA_SOURCES):
+    if source is not None:
+        cam = get_camera(source)
+        if cam:
+            cameras[i] = cam
+            print(f"✓ Camera {i} initialized from {source}")
+        else:
+            print(f"✗ Camera {i} failed to open: {source}")
     else:
-        print(f"✗ Camera {i} not available")
+        print(f"✗ Camera {i} not configured")
 
 # Create snapshot directory
 SNAPSHOT_DIR = Path("snapshots")
