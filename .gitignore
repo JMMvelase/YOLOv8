@@ -4,3 +4,15 @@ __pycache__/
 *.pyc
 .env
 snapshots/
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pt
+*.onnx
+*.engine
+datasets/
+videos/
+runs/
+.snapshots/
+.env
