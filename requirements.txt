@@ -1,9 +1,8 @@
-torch==2.9.1+cpu
-torchvision==0.17.2+cpu
 --extra-index-url https://download.pytorch.org/whl/cpu
-
+torch==2.9.1+cpu
+torchvision==0.24.1+cpu
 fastapi
-uvicorn
+uvicorn[standard]
 ultralytics
 opencv-python-headless
 numpy
