@@ -1,0 +1,6 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#1e293b"/>
+  <circle cx="200" cy="120" r="40" fill="none" stroke="#64748b" stroke-width="2"/>
+  <line x1="240" y1="160" x2="280" y2="200" stroke="#64748b" stroke-width="2"/>
+  <text x="200" y="220" font-size="18" fill="#94a3b8" text-anchor="middle" font-family="sans-serif">Camera Offline</text>
+</svg>
