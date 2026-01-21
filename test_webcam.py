@@ -1,24 +1,16 @@
 import cv2
+import numpy as np
+from dotenv import load_dotenv
+from app.detector import detect_from_frame
 
-cap = cv2.VideoCapture(0)  # 0 is the default camera
+# Load environment variables from .env file
+load_dotenv()
 
-if not cap.isOpened():
-    print("❌ Error: Could not open webcam.")
-    exit()
+# Create a simple test image
+test_image = np.zeros((480, 640, 3), dtype=np.uint8)
 
-print("✅ Webcam opened successfully. Press 'q' to quit.")
+# Test detection
+result = detect_from_frame(test_image)
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("❌ Failed to grab frame")
-        break
-
-    cv2.imshow("Live Webcam Feed", frame)
-
-    # Press 'q' to close the window
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+print("Detection result:")
+print(result)

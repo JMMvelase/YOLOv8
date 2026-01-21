@@ -19,146 +19,77 @@
   <!-- ========== TOP NAV ========== -->
   <header class="backdrop-blur bg-slate-900/60 sticky top-0 z-50 border-b border-slate-800">
     <nav class="mx-auto max-w-7xl px-6 flex items-center justify-between h-16">
-      <h1 class="text-lg tracking-tight font-semibold"> ZAKHE AI PPE DETECTION </h1>
+      <h1 class="text-lg tracking-tight font-semibold">ZAKHE AI PPE DETECTION</h1>
 
       <ul class="flex gap-6 text-sm">
         <li><button class="group flex items-center gap-2 text-sky-400" onclick="window.location.href='/dashboard.html'"><i data-lucide="home" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Home</span></button></li>
         <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="window.location.href='/employee.html'"><i data-lucide="user" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">Employees</span></button></li>
         <li><button class="group flex items-center gap-2 hover:text-sky-400 transition" onclick="window.location.href='/history.html'"><i data-lucide="history" class="w-4 h-4 stroke-[1.5]"></i><span class="hidden md:inline">History</span></button></li>
-      
- </ul>
+      </ul>
     </nav>
   </header>
 
   <!-- ========== MAIN LAYOUT ========== -->
   <main class="mx-auto max-w-7xl px-6 py-10 grid lg:grid-cols-12 gap-10">
 
-    <!-- ------ WEBCAM DETECTION ------ -->
-    <section class="lg:col-span-12 flex flex-col gap-4">
-      <h2 class="text-xl tracking-tight font-semibold">Live Webcam Detection</h2>
-      <div class="grid lg:grid-cols-2 gap-4 rounded-xl overflow-hidden ring-1 ring-slate-800 shadow-lg bg-slate-800 p-4">
-        <!-- Live Camera -->
-        <div class="flex flex-col gap-2">
-          <span class="text-xs text-slate-400">Live Camera Feed</span>
-          <video id="webcam" autoplay playsinline class="w-full h-80 bg-black rounded transform scale-x-[-1]"></video>
-        </div>
-        <!-- Detection Output -->
-        <div class="flex flex-col gap-2">
-          <span class="text-xs text-slate-400">Detection Output</span>
-          <canvas id="output" class="w-full h-80 bg-black rounded"></canvas>
+    <!-- ------ LIVE FEED ------ -->
+    <section class="lg:col-span-8 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl tracking-tight font-semibold">Live Webcam Feed</h2>
+        <div id="cameraStatus" class="flex items-center gap-2 text-sm">
+          <div class="w-2 h-2 rounded-full bg-slate-600" id="statusDot"></div>
+          <span id="statusText">Camera Inactive</span>
         </div>
       </div>
-      
-      <div id="status" class="p-3 rounded-lg text-sm font-medium bg-red-900/30 text-red-300 text-center">
-        Camera: Inactive
+
+      <!-- Camera Controls -->
+      <div class="flex gap-3 flex-wrap">
+        <button id="startBtn" onclick="startCamera()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium transition flex items-center gap-2">
+          <i data-lucide="video" class="w-4 h-4"></i>
+          Start Camera
+        </button>
+        <button id="stopBtn" onclick="stopCamera()" disabled class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <i data-lucide="video-off" class="w-4 h-4"></i>
+          Stop Camera
+        </button>
+        <button id="detectBtn" onclick="toggleAutoDetect()" disabled class="px-4 py-2 bg-sky-600 hover:bg-sky-700 rounded-lg text-sm font-medium transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <i data-lucide="scan" class="w-4 h-4"></i>
+          Start Detection
+        </button>
       </div>
-      
-      <div class="flex gap-2 justify-center flex-wrap">
-        <button onclick="startCamera()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition">
-          📹 Start Camera
-        </button>
-        <button onclick="stopCamera()" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition">
-          ⏹️ Stop Camera
-        </button>
-        <button id="detectBtn" onclick="toggleAutoDetect()" disabled class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg font-medium transition">
-          🔍 Start Auto-Detect
-        </button>
-      </div>
-      
-      <div class="p-4 bg-slate-900/60 rounded-lg ring-1 ring-slate-800">
-        <h3 class="text-sm font-semibold mb-3">Detection Results</h3>
-        <div id="resultsContent" class="text-sm text-slate-400">
-          <p>Start the camera to begin detection...</p>
+
+      <!-- Video Feed with Detection Overlay -->
+      <div class="relative rounded-xl overflow-hidden ring-1 ring-slate-800 shadow-lg bg-slate-900" style="width: 100%; max-width: 100%;">
+        <div style="position: relative; width: 100%; padding-bottom: 62.5%;">
+          <video id="webcam" autoplay playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; background: #1e293b;"></video>
+          <canvas id="output" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
         </div>
       </div>
+
+      <!-- Hidden canvas for processing -->
+      <canvas id="canvas" style="display:none;"></canvas>
     </section>
-
-    <!-- ------ LIVE FEED ------ --> -->
-  
-<section class="lg:col-span-8 flex flex-col gap-4">
-  <h2 class="text-xl tracking-tight font-semibold">Live Camera Feed</h2>
-  <div class="relative rounded-xl overflow-hidden ring-1 ring-slate-800 shadow-lg">
-    <div class="bg-slate-800">
-      <!-- Camera 0 -->
-      <div class="relative">
-        <img id="videoFeed0" src="/video0" alt="Camera 0 - Click to enlarge" class="w-full h-96 object-cover cursor-pointer hover:opacity-90 transition" onerror="this.src='/static/camera-error.svg'; this.classList.add('opacity-50');"/>
-        <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 1</span>
-      </div>
-<!-- Modal for enlarged view -->
-<div id="viewerModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
-  <div class="relative max-w-2xl w-full mx-4">
-    <button id="viewerClose" class="absolute top-4 right-4 text-white bg-slate-800/70 rounded px-3 py-1 hover:bg-slate-700 z-60">✕</button>
-    <img id="viewerImg" src="" alt="Enlarged Feed" class="w-full h-auto rounded shadow-lg border pointer-events-none"/>
-  </div>
-</div>
-
-<script>
-  // ...existing code...
-
-  function closeViewer() {
-    // Stop stream by clearing src
-    viewerImg.src = '';
-    modal.classList.remove('flex');
-    modal.classList.add('hidden');
-    document.body.style.overflow = '';
-  }
-
-  // Attach click handlers to both feeds
-  document.getElementById('videoFeed0').addEventListener('click', () => openViewer('/video0'));
-
-  // Close handlers - modal background click
-  modal.addEventListener('click', (e) => { 
-    if (e.target === modal) closeViewer(); 
-  });
-  
-  // Close button click
-  viewerClose.addEventListener('click', closeViewer);
-  
-  // Escape key
-  document.addEventListener('keydown', (e) => { 
-    if (e.key === 'Escape' && modal.classList.contains('flex')) closeViewer(); 
-  });
-</script>
-      <!--
-      <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700"></div>
-      Camera 1 
-      <div class="relative bg-slate-800">
-        <img id="videoFeed1" src="/video1" alt="Camera 1 - Click to enlarge" class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition" onerror="this.src='/static/camera-error.svg'; this.classList.add('opacity-50');"/>
-        <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 2</span>
-      </div>
-
-      Divider 
-      <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-slate-700"></div>
-      - Camera 2 -
-      <div class="relative bg-slate-800">
-        <img id="videoFeed2" src="/video2" alt="Camera 2 - Click to enlarge" onerror="this.src='/static/camera-error.svg'; this.classList.add('opacity-50')"
-        class="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition"/>
-        <span class="absolute bottom-2 left-2 text-xs bg-black/50 px-2 py-1 rounded">Camera 3</span>
-      </div>
-    -->
-            
-
-    </div>
-  </div>
-</section>
-
 
     <!-- ------ DATA PANEL ------ -->
     <aside class="lg:col-span-4 flex flex-col gap-8">
-      <!-- Object Counts -->
-      <section class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg">
-        <h3 class="text-lg tracking-tight font-semibold mb-4">Detections</h3>
-        <div class="space-y-4" id="countList"></div>
-      </section>
-
       <!-- Bar Chart -->
       <section class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg">
-        <h3 class="text-lg tracking-tight font-semibold mb-4">Frequency Chart</h3>
+        <h3 class="text-lg tracking-tight font-semibold mb-4">Detection Frequency</h3>
         <div class="relative">
           <canvas id="countChart" height="180"></canvas>
         </div>
       </section>
+
+      <!-- Object Counts -->
+      <section class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg">
+        <h3 class="text-lg tracking-tight font-semibold mb-4">Live Detections</h3>
+        <div class="space-y-4" id="countList">
+          <p class="text-sm text-slate-400">Detections will appear here...</p>
+        </div>
+      </section>
     </aside>
+    </section>
+
   </main>
 
   <!-- ========== FOOTER ========== -->
@@ -167,161 +98,6 @@
   </footer>
 
   <script>
-    // ========== WEBCAM DETECTION =========
-    let stream;
-    let autoDetectInterval;
-    let isAutoDetecting = false;
-    const video = document.getElementById('webcam');
-    const hiddenCanvas = document.createElement('canvas');
-    const outputCanvas = document.getElementById('output');
-    const detectBtn = document.getElementById('detectBtn');
-    const resultsDiv = document.getElementById('resultsContent');
-    const statusDiv = document.getElementById('status');
-    
-    async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-          } 
-        });
-        video.srcObject = stream;
-        detectBtn.disabled = false;
-        statusDiv.className = 'p-3 rounded-lg text-sm font-medium bg-emerald-900/30 text-emerald-300 text-center';
-        statusDiv.textContent = 'Camera: Active';
-        
-        // Set output canvas size
-        video.addEventListener('loadedmetadata', () => {
-          outputCanvas.width = video.videoWidth;
-          outputCanvas.height = video.videoHeight;
-        });
-      } catch (err) {
-        alert('Could not access camera: ' + err.message);
-        console.error('Camera error:', err);
-      }
-    }
-    
-    function stopCamera() {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        detectBtn.disabled = true;
-        statusDiv.className = 'p-3 rounded-lg text-sm font-medium bg-red-900/30 text-red-300 text-center';
-        statusDiv.textContent = 'Camera: Inactive';
-        
-        if (isAutoDetecting) {
-          toggleAutoDetect();
-        }
-      }
-    }
-    
-    function toggleAutoDetect() {
-      if (isAutoDetecting) {
-        clearInterval(autoDetectInterval);
-        isAutoDetecting = false;
-        detectBtn.textContent = '🔍 Start Auto-Detect';
-        detectBtn.className = 'px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg font-medium transition';
-      } else {
-        isAutoDetecting = true;
-        detectBtn.textContent = '⏸️ Stop Auto-Detect';
-        detectBtn.className = 'px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition';
-        
-        detectPPE();
-        autoDetectInterval = setInterval(detectPPE, 1000);
-      }
-    }
-    
-    async function detectPPE() {
-      const ctx = hiddenCanvas.getContext('2d');
-      hiddenCanvas.width = video.videoWidth;
-      hiddenCanvas.height = video.videoHeight;
-      
-      ctx.drawImage(video, 0, 0);
-      
-      hiddenCanvas.toBlob(async (blob) => {
-        const formData = new FormData();
-        formData.append('image', blob, 'frame.jpg');
-        
-        try {
-          const response = await fetch('/detect-webcam', {
-            method: 'POST',
-            body: formData
-          });
-          
-          const result = await response.json();
-          drawDetections(result);
-          displayResults(result);
-        } catch (err) {
-          console.error('Detection error:', err);
-          resultsDiv.innerHTML = '<p class="text-red-400">Error: ' + err.message + '</p>';
-        }
-      }, 'image/jpeg', 0.95);
-    }
-    
-    function drawDetections(result) {
-      const ctx = outputCanvas.getContext('2d');
-      
-      // Draw mirrored video frame
-      ctx.save();
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, -outputCanvas.width, 0, outputCanvas.width, outputCanvas.height);
-      ctx.restore();
-      
-      if (result.predictions && result.predictions.length > 0) {
-        result.predictions.forEach(pred => {
-          const mirroredX = outputCanvas.width - pred.x;
-          
-          ctx.strokeStyle = '#00FF00';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(
-            mirroredX - pred.width/2, 
-            pred.y - pred.height/2, 
-            pred.width, 
-            pred.height
-          );
-          
-          const label = `${pred.class} ${(pred.confidence * 100).toFixed(1)}%`;
-          ctx.font = 'bold 16px Arial';
-          const textWidth = ctx.measureText(label).width;
-          
-          ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-          ctx.fillRect(
-            mirroredX - pred.width/2,
-            pred.y - pred.height/2 - 25,
-            textWidth + 10,
-            25
-          );
-          
-          ctx.fillStyle = '#000';
-          ctx.fillText(
-            label,
-            mirroredX - pred.width/2 + 5,
-            pred.y - pred.height/2 - 7
-          );
-        });
-      }
-    }
-    
-    function displayResults(result) {
-      if (result.error) {
-        resultsDiv.innerHTML = `<p class="text-red-400">Error: ${result.error}</p>`;
-        return;
-      }
-      
-      if (result.predictions && result.predictions.length > 0) {
-        const html = result.predictions.map(p => `
-          <div class="flex justify-between items-center p-2 bg-slate-800 rounded mb-2">
-            <span class="text-slate-200">${p.class}</span>
-            <span class="text-emerald-400 font-semibold">${(p.confidence * 100).toFixed(1)}%</span>
-          </div>
-        `).join('');
-        
-        resultsDiv.innerHTML = html;
-      } else {
-        resultsDiv.innerHTML = '<p class="text-slate-400">No PPE detected in frame</p>';
-      }
-    }
-
     // Init Lucide
     lucide.createIcons();
 
@@ -335,9 +111,6 @@
         el.style.transform = 'translateY(0)';
       }, 100 + idx * 100);
     });
-
-    // Navigation helper
-    const navigate = hash => window.location.hash = hash;
 
     // ------------- Chart.js Setup -------------
     const ctx = document.getElementById('countChart').getContext('2d');
@@ -355,69 +128,264 @@
       }
     });
 
-    // ------------- Counts Fetching -------------
-    async function updateCounts() {
-      try {
-        const res = await fetch('/counts');
-        const data = await res.json();
+    // ------------- WebRTC Camera Setup -------------
+    let stream;
+    let autoDetectInterval;
+    let isAutoDetecting = false;
+    let detectionCounts = {};
+    let recentAlerts = [];
+    
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const outputCanvas = document.getElementById('output');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const detectBtn = document.getElementById('detectBtn');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
 
-        // List
-        const list = document.getElementById('countList');
-        list.innerHTML = '';
-        Object.entries(data).forEach(([k, v]) => {
-          const barLen = Math.min(v * 6, 160);
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          } 
+        });
+        
+        video.srcObject = stream;
+        
+        video.addEventListener('loadedmetadata', () => {
+          outputCanvas.width = video.videoWidth;
+          outputCanvas.height = video.videoHeight;
+        });
+        
+        // Update UI
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        detectBtn.disabled = false;
+        statusDot.className = 'w-2 h-2 rounded-full bg-green-500 animate-pulse';
+        statusText.textContent = 'Camera Active';
+        
+        lucide.createIcons();
+        
+      } catch (err) {
+        alert('Could not access camera: ' + err.message);
+        console.error('Camera error:', err);
+      }
+    }
+    
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        
+        if (isAutoDetecting) {
+          toggleAutoDetect();
+        }
+        
+        // Update UI
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        detectBtn.disabled = true;
+        statusDot.className = 'w-2 h-2 rounded-full bg-slate-600';
+        statusText.textContent = 'Camera Inactive';
+        
+        // Clear output
+        const ctx = outputCanvas.getContext('2d');
+        ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+      }
+    }
+    
+    function toggleAutoDetect() {
+      if (isAutoDetecting) {
+        // Stop auto-detect
+        clearInterval(autoDetectInterval);
+        isAutoDetecting = false;
+        detectBtn.innerHTML = '<i data-lucide="scan" class="w-4 h-4"></i> Start Detection';
+        detectBtn.className = 'px-4 py-2 bg-sky-600 hover:bg-sky-700 rounded-lg text-sm font-medium transition flex items-center gap-2';
+      } else {
+        // Start auto-detect
+        isAutoDetecting = true;
+        detectBtn.innerHTML = '<i data-lucide="pause" class="w-4 h-4"></i> Stop Detection';
+        detectBtn.className = 'px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-sm font-medium transition flex items-center gap-2';
+        
+        // Detect immediately
+        detectPPE();
+        
+        // Then detect every 1.5 seconds
+        autoDetectInterval = setInterval(detectPPE, 1500);
+      }
+      
+      lucide.createIcons();
+    }
+    
+    async function detectPPE() {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Draw current frame to hidden canvas
+      ctx.drawImage(video, 0, 0);
+      
+      // Convert canvas to blob
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('image', blob, 'frame.jpg');
+        
+        try {
+          const response = await fetch('/detect-webcam', {
+            method: 'POST',
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          // Draw detections on output canvas
+          drawDetections(result);
+          
+          // Update counts
+          updateCounts(result);
+          
+        } catch (err) {
+          console.error('Detection error:', err);
+        }
+      }, 'image/jpeg', 0.90);
+    }
+    
+    function drawDetections(result) {
+      const ctx = outputCanvas.getContext('2d');
+      
+      // Set canvas size to match video
+      outputCanvas.width = video.videoWidth;
+      outputCanvas.height = video.videoHeight;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+      
+      // Draw the current video frame (mirrored)
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, -outputCanvas.width, 0, outputCanvas.width, outputCanvas.height);
+      ctx.restore();
+      
+      // Draw bounding boxes
+      if (result.predictions && result.predictions.length > 0) {
+        result.predictions.forEach(pred => {
+          // Mirror the x coordinate
+          const mirroredX = outputCanvas.width - pred.x;
+          
+          // Choose color based on class
+          const color = getColorForClass(pred.class);
+          
+          // Draw bounding box
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(
+            mirroredX - pred.width/2, 
+            pred.y - pred.height/2, 
+            pred.width, 
+            pred.height
+          );
+          
+          // Draw label background
+          const label = `${pred.class} ${(pred.confidence * 100).toFixed(0)}%`;
+          ctx.font = 'bold 14px Arial';
+          const textWidth = ctx.measureText(label).width;
+          
+          ctx.fillStyle = color;
+          ctx.fillRect(
+            mirroredX - pred.width/2,
+            pred.y - pred.height/2 - 22,
+            textWidth + 10,
+            22
+          );
+          
+          // Draw label text
+          ctx.fillStyle = '#000';
+          ctx.fillText(
+            label,
+            mirroredX - pred.width/2 + 5,
+            pred.y - pred.height/2 - 6
+          );
+        });
+      }
+    }
+    
+    function getColorForClass(className) {
+      const colors = {
+        'helmet': '#10b981',
+        'vest': '#f59e0b',
+        'person': '#3b82f6',
+        'no-helmet': '#ef4444',
+        'no-vest': '#ef4444'
+      };
+      return colors[className.toLowerCase()] || '#0ea5e9';
+    }
+    
+    function updateCounts(result) {
+      if (!result.predictions) return;
+      
+      // Reset counts
+      const currentCounts = {};
+      
+      // Count detections
+      result.predictions.forEach(pred => {
+        const className = pred.class;
+        currentCounts[className] = (currentCounts[className] || 0) + 1;
+        
+        // Add to recent alerts if confidence is high
+        if (pred.confidence > 0.7) {
+          addRecentAlert(className, pred.confidence);
+        }
+      });
+      
+      // Update global counts
+      detectionCounts = currentCounts;
+      
+      // Update list display
+      const list = document.getElementById('countList');
+      list.innerHTML = '';
+      
+      if (Object.keys(currentCounts).length === 0) {
+        list.innerHTML = '<p class="text-sm text-slate-400">No detections in frame</p>';
+      } else {
+        Object.entries(currentCounts).forEach(([k, v]) => {
+          const barLen = Math.min(v * 30, 160);
+          const color = getColorForClass(k);
           list.insertAdjacentHTML('beforeend', `
             <div class="flex items-center justify-between text-sm">
-              <span class="capitalize">${k}</span>
+              <span class="capitalize font-medium">${k}</span>
               <span class="flex-1 mx-4 bg-slate-800 h-2 rounded overflow-hidden">
-                <span style="width:${barLen}px" class="block h-full bg-sky-500"></span>
+                <span style="width:${barLen}px; background-color:${color}" class="block h-full"></span>
               </span>
-              <span class="tabular-nums">${v}</span>
+              <span class="tabular-nums font-bold">${v}</span>
             </div>
           `);
         });
-
-        // Chart
-        chart.data.labels = Object.keys(data);
-        chart.data.datasets[0].data = Object.values(data);
-        chart.update();
-
-      } catch (e) {
-        console.error(e);
       }
+      
+      // Update chart
+      chart.data.labels = Object.keys(currentCounts);
+      chart.data.datasets[0].data = Object.values(currentCounts);
+      chart.data.datasets[0].backgroundColor = Object.keys(currentCounts).map(k => getColorForClass(k));
+      chart.update();
     }
-    updateCounts();
-    setInterval(updateCounts, 2000);
-
-    // --------- Click-to-enlarge viewer ---------
-    const modal = document.getElementById('viewerModal');
-    const viewerImg = document.getElementById('viewerImg');
-    const viewerClose = document.getElementById('viewerClose');
-
-    function openViewer(src, title) {
-      // Use the MJPEG stream endpoint as the image src
-      viewerImg.src = src;
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      // prevent background scrolling
-      document.body.style.overflow = 'hidden';
+    
+    function addRecentAlert(className, confidence) {
+      const time = new Date().toLocaleTimeString();
+      const alert = { className, confidence, time };
+      
+      recentAlerts.unshift(alert);
+      if (recentAlerts.length > 10) recentAlerts.pop();
+      
+      const container = document.getElementById('recentDetections');
+      container.innerHTML = recentAlerts.map(a => `
+        <div class="text-xs p-2 bg-slate-800/50 rounded flex justify-between items-center">
+          <span class="capitalize">${a.className}</span>
+          <span class="text-slate-400">${a.time}</span>
+        </div>
+      `).join('');
     }
-
-    function closeViewer() {
-      // Stop stream by clearing src
-      viewerImg.src = '';
-      modal.classList.remove('flex');
-      modal.classList.add('hidden');
-      document.body.style.overflow = '';
-    }
-
-    // Attach click handlers
-    document.getElementById('videoFeed0').addEventListener('click', () => openViewer('/video0'));
-
-    // Close handlers
-    viewerClose.addEventListener('click', closeViewer);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeViewer(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeViewer(); });
   </script>
 </body>
-</html> 
+</html>
