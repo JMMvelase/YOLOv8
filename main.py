@@ -6,7 +6,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables from
 load_dotenv()
 
 from app.detector import detect_from_upload
