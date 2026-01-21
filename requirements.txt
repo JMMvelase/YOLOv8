@@ -1,12 +1,8 @@
-torch
-torchvision
 fastapi
 uvicorn[standard]
-ultralytics
 opencv-python-headless
 numpy
 jinja2
 python-multipart
 requests
 pillow
-python-dotenv
