@@ -2,25 +2,25 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-
-# Install system dependencies first
+# Install only essential system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 \
     libglib2.0-0 \
-    libgomp1 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Copy requirements
+# Copy requirements and install
 COPY requirements.txt .
-
-# Install Python packages with no cache
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    rm -rf /root/.cache/pip
 
-# Copy application code
+# Copy application
 COPY . .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+# Railway always sets PORT, so just use it
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT
