@@ -75,8 +75,8 @@
       <!-- Bar Chart -->
       <section class="p-6 rounded-xl ring-1 ring-slate-800 bg-slate-900/60 shadow-lg">
         <h3 class="text-lg tracking-tight font-semibold mb-4">Detection Frequency</h3>
-        <div class="relative">
-          <canvas id="countChart" height="180"></canvas>
+        <div class="relative" style="height: 180px;">
+          <canvas id="countChart" ></canvas>
         </div>
       </section>
 
@@ -288,8 +288,7 @@
           );
           
           // Draw label background
-          const label = `${pred.class} ${(pred.confidence * 100).toFixed(0)}%`;
-          ctx.font = 'bold 14px Arial';
+          const label = `${pred.class} ${(pred.confidence * 100).toFixed(0)}% ${pred.track_id !== null ? '#' + pred.track_id : ''}`;          ctx.font = 'bold 14px Arial';
           const textWidth = ctx.measureText(label).width;
           
           ctx.fillStyle = color;
@@ -312,14 +311,17 @@
     }
     
     function getColorForClass(className) {
-      const colors = {
-        'helmet': '#10b981',
-        'vest': '#f59e0b',
-        'person': '#3b82f6',
-        'no-helmet': '#ef4444',
-        'no-vest': '#ef4444'
-      };
-      return colors[className.toLowerCase()] || '#0ea5e9';
+     const colors = {
+       'helmet': '#10b981',
+       'vest': '#10b981',
+       'glove': '#10b981',
+       'safety glasses': '#10b981',
+       'no vest': '#ef4444',       // ← matches your model's exact class names
+       'no glove': '#ef4444',
+       'no helmet': '#ef4444',
+       'person': '#3b82f6',
+     };
+     return colors[className.toLowerCase()] || '#0ea5e9';
     }
     
     function updateCounts(result) {

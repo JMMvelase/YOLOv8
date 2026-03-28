@@ -1,59 +1,57 @@
-import requests
-import base64
 import cv2
 import numpy as np
 import os
+from pathlib import Path
+from ultralytics import YOLO
+
+# Load model once at startup
+MODEL_PATH = Path(__file__).parent.parent / "weights" / "best.1.0.pt"
+model = YOLO(str(MODEL_PATH))
 
 def detect_from_frame(frame):
     """
-    Send frame to Roboflow API for detection
+    Run YOLOv8 inference on a frame using local weights
     """
-    # Load environment variables each time the function is called
-    roboflow_api_key = os.getenv("ROBOFLOW_API_KEY", "")
-    model_id = os.getenv("MODEL_ID", "ppe-fruwx-vgp3y/1")
-    
-    print(f"DEBUG: API Key set: {bool(roboflow_api_key)}")
-    print(f"DEBUG: Model ID: {model_id}")
-    
-    if not roboflow_api_key:
-        return {"error": "ROBOFLOW_API_KEY not set", "predictions": []}
-    
-    # Encode frame as JPEG
-    _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-    img_base64 = base64.b64encode(buffer).decode('utf-8')
-    
-    # Roboflow API endpoint
-    url = f"https://detect.roboflow.com/{model_id}"
-    print(f"DEBUG: URL: {url}")
-    
-    params = {
-        "api_key": roboflow_api_key,
-        "confidence": 40,  # Minimum confidence threshold (0-100)
-        "overlap": 30      # NMS threshold
-    }
-    
     try:
-        # Send request to Roboflow
-        response = requests.post(
-            url,
-            params=params,
-            data=img_base64,
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
-        )
+        print(f"DEBUG: Running inference on frame with shape {frame.shape}")
         
-        print(f"DEBUG: Response status: {response.status_code}")
+        # Run inference
+        results = model.track(frame, conf=0.7, persist=True)  # 0.7 = 70% confidence threshold
         
-        if response.status_code == 200:
-            predictions = response.json()
-            print(f"DEBUG: Predictions received: {len(predictions.get('predictions', []))} detections")
-            return predictions
-        else:
-            print(f"Roboflow API Error: {response.status_code}")
-            print(f"Response: {response.text}")
-            return {"error": f"API returned {response.status_code}", "predictions": []}
+        predictions = []
+        
+        if results and len(results) > 0:
+            result = results[0]
+            
+            # Extract detections
+            if result.boxes is not None:
+                if result.boxes.id is not None:
+                    track_ids = result.boxes.id.cpu().numpy()
+                else:
+                    track_ids = [None] * len(result.boxes)
+
+                boxes = result.boxes.xyxy.cpu().numpy()  # ← fixed
+                confs = result.boxes.conf.cpu().numpy()
+                class_ids = result.boxes.cls.cpu().numpy()
+
+                for i, box in enumerate(boxes):
+                    x1, y1, x2, y2 = box
+                    predictions.append({
+                        "x": float((x1 + x2) / 2),
+                        "y": float((y1 + y2) / 2),
+                        "width": float(x2 - x1),
+                        "height": float(y2 - y1),
+                        "confidence": float(confs[i]),
+                        "class": result.names[int(class_ids[i])],
+                        "track_id": int(track_ids[i]) if track_ids[i] is not None else None
+                    })
+        print(f"DEBUG: Predictions: {len(predictions)} detections")
+        return {"predictions": predictions}
     
     except Exception as e:
         print(f"Exception during detection: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return {"error": str(e), "predictions": []}
 
 def detect_from_upload(image_bytes):

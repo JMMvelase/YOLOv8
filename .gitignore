@@ -16,3 +16,4 @@ videos/
 runs/
 .snapshots/
 .env
+detect/

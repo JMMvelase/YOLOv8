@@ -1,6 +1,5 @@
-from fastapi import FastAPI, Request, File, UploadFile
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import os
@@ -12,32 +11,36 @@ load_dotenv()
 from app.detector import detect_from_upload
 
 app = FastAPI()
-templates = Jinja2Templates(directory="app/templates")
+templates_dir = Path(__file__).parent / "app" / "templates"
 
 # Mount static files
-static_dir = Path("app/static")
+static_dir = Path(__file__).parent / "app" / "static"
 static_dir.mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+app.mount("/static", StaticFiles(directory=static_dir.as_posix()), name="static")
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
+async def home():
     """Home page with webcam detection"""
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    html_file = templates_dir / "dashboard.html"
+    return HTMLResponse(content=html_file.read_text(encoding='utf-8'))
 
 @app.get("/dashboard.html", response_class=HTMLResponse)
-async def dashboard(request: Request):
+async def dashboard():
     """Dashboard page"""
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    html_file = templates_dir / "dashboard.html"
+    return HTMLResponse(content=html_file.read_text(encoding='utf-8'))
 
 @app.get("/employee.html", response_class=HTMLResponse)
-async def employee(request: Request):
+async def employee():
     """Employee page"""
-    return templates.TemplateResponse("employee.html", {"request": request})
+    html_file = templates_dir / "employee.html"
+    return HTMLResponse(content=html_file.read_text(encoding='utf-8'))
 
 @app.get("/history.html", response_class=HTMLResponse)
-async def history(request: Request):
+async def history():
     """History page"""
-    return templates.TemplateResponse("history.html", {"request": request})
+    html_file = templates_dir / "history.html"
+    return HTMLResponse(content=html_file.read_text(encoding='utf-8'))
 
 @app.post("/detect-webcam")
 async def detect_webcam_frame(image: UploadFile = File(...)):
@@ -55,13 +58,14 @@ async def detect_webcam_frame(image: UploadFile = File(...)):
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    api_key_set = bool(os.getenv("ROBOFLOW_API_KEY"))
-    model_id = os.getenv("MODEL_ID", "ppe-detection/1")
+    weights_path = Path(__file__).parent / "weights" / "best.1.0.pt"
+    model_loaded = weights_path.exists()
     
     return {
         "status": "ok",
-        "api_key_configured": api_key_set,
-        "model_id": model_id
+        "model_type": "YOLOv8 (Local)",
+        "weights_file": "best.1.0.pt",
+        "model_loaded": model_loaded
     }
 
 
